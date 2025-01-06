@@ -1,9 +1,10 @@
 import catchAsync from "../utils/catchAsync.js";
+import AppError from "../utils/appError.js";
 import User from "../models/userModel.js";
 import jwt from 'jsonwebtoken';
+import {promisify} from 'util';
 import bcrypt from 'bcryptjs';
 import 'dotenv/config';
-import AppError from "../utils/appError.js";
 
 const signToken=id=>{
     return jwt.sign(
@@ -65,7 +66,44 @@ const login=catchAsync(async(req,res,next)=>{
     })
 });
 
+const protect=catchAsync(async(req,res,next)=>{
+    let token
+    token = req.headers.authorization?.split(' ')[1];;
+    if(!token){
+        return next(new AppError(
+            "you aren't loggend in",401)
+        );
+    }
+    
+    let decoded;
+    decoded=await promisify(jwt.verify)(token,process.env.JWT_SECRET)
+    
+    const currentUser=await User.findById(decoded.id);
+    if(!currentUser){
+        return next(new AppError(
+            "user of this token don't exist",401
+        ));
+    };
+    
+    req.user=currentUser;
+    next();
+});
+
+const restrictTo=(...roles)=>{
+    return (req,res,next)=>{
+        // roles ['admin','lead-guide']. role='user'
+        if(!roles.includes(req.user.role)){
+            return next(new AppError(
+                'You do not have permession',403
+            ));
+        };
+        next();
+    };
+};
+
 export default{
     signup,
-    login
+    login,
+    protect,
+    restrictTo
 };
