@@ -1,15 +1,26 @@
 import express from 'express';
 import problemController from '../controllers/problemController.js';
+import authController from '../controllers/authController.js';
 
 const router=express.Router();
 
+router.use(authController.protect);
+
+router.get('/problems',
+    problemController.getAllProblems
+);
+
+router.get('/problems/:id',
+    problemController.getProblem
+);
+
+router.use(authController.restrictTo('admin'));
+
 router.route('/problems')
-.get(problemController.getAllProblems)
 .post(problemController.createProblem)
-.delete(problemController.deleteAllProblem);
+.delete(problemController.deleteAllProblems);
 
 router.route('/problems/:id')
-.get(problemController.getProblem)
 .patch(problemController.updateProblem)
 .delete(problemController.deleteProblem);
 

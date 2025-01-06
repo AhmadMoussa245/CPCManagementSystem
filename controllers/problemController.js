@@ -19,7 +19,7 @@ const getProblem=catchAsync(async(req,res,next)=>{
     if(!problem){
         return next(new AppError(
             'problem not found',404
-        ))
+        ));
     };
     res.status(200).json({
         status:'success',
@@ -27,18 +27,18 @@ const getProblem=catchAsync(async(req,res,next)=>{
             problem
         }
     });
-})
+});
 
 const createProblem=catchAsync(async(req,res,next)=>{
-    const problem=await Problem.create(req.body)
+    const problem=await Problem.create(req.body);
     
     res.status(201).json({
         status:'success',
         data:{
             data:problem
         }
-    })
-})
+    });
+});
 
 const updateProblem=catchAsync(async(req,res,next)=>{
     const problem=await Problem.findByIdAndUpdate(
@@ -59,29 +59,29 @@ const updateProblem=catchAsync(async(req,res,next)=>{
         data:{
             data:problem
         }
-    })
-})
+    });
+});
 
 const deleteProblem=catchAsync(async(req,res,next)=>{
     const problem=await Problem.findByIdAndDelete(req.params.id);
     if(!problem){
         return next(new AppError(
             'problem not found',404
-        ))
-    }
+        ));
+    };
     res.status(204).json({
         status:'success',
         data: null
-    })
-})
+    });
+});
 
-const deleteAllProblem=catchAsync(async(req,res,next)=>{
+const deleteAllProblems=catchAsync(async(req,res,next)=>{
     await Problem.deleteMany();
     res.status(204).json({
         status:'success',
         data: null
-    })
-})
+    });
+});
 
 export default{
     getAllProblems,
@@ -89,5 +89,5 @@ export default{
     createProblem,
     updateProblem,
     deleteProblem,
-    deleteAllProblem
-}
+    deleteAllProblems
+};
