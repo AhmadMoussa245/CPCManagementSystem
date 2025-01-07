@@ -9,13 +9,16 @@ const solutionSchema=mongoose.Schema(
         status:{
             type:String,
             default:'In Queue',
-            enum:[
-                'In Queue',
-                'Accepted',
-                'Wrong Answer',
-                'Time Limit Exceeded',
-                'Memory Limit Exceeded'
-            ]
+            enum:{
+                values:[
+                    'In Queue',
+                    'Accepted',
+                    'Wrong Answer',
+                    'Time Limit Exceeded',
+                    'Memory Limit Exceeded'
+                ],
+                message:`allowed status are : 'In Queue', 'Accepted', 'Wrong Answer', 'Time Limit Exceeded', 'Memory Limit Exceeded'`
+            }
         },
         createdAt:Date,
         userId:{
