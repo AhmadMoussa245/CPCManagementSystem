@@ -23,5 +23,12 @@ router.post('/problems/:id/question',
     userController.sendQuestion
 );
 
+router.use(authController.restrictTo('admin'));
+
+router.get('/users',userController.getAllUsers);
+
+router.route('/users/:id')
+.patch(userController.updateUser)
+.delete(userController.deleteUser);
 
 export default router;
