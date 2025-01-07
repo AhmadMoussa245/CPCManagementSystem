@@ -1,5 +1,6 @@
 import catchAsync from "../utils/catchAsync.js";
 import Solution from "../models/solutionModel.js";
+import Question from "../models/questionModel.js"
 import {fileURLToPath} from 'url'
 import path from 'path';
 import fs from 'node:fs';
@@ -43,6 +44,22 @@ const sendSolution=catchAsync(async(req,res,next)=>{
     });
 });
 
+const sendQuestion=catchAsync(async(req,res,next)=>{
+    const question=await Question.create({
+        description:req.body.description,
+        userId:req.user.id,
+        problemId:req.params.id
+    });
+
+    res.status(201).json({
+        status:'success',
+        data:{
+            question
+        }
+    });
+});
+
 export default{
     sendSolution,
+    sendQuestion
 };

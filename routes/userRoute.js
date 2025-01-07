@@ -19,6 +19,9 @@ router.post('/problems/:id/solution',
     userController.sendSolution
 );
 
+router.post('/problems/:id/question',
+    userController.sendQuestion
+);
 
 
 export default router;
