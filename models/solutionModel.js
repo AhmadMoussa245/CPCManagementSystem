@@ -34,6 +34,18 @@ const solutionSchema=mongoose.Schema(
     }
 );
 
+solutionSchema.pre(/^find/,function(next){
+    this.populate({
+        path:'userId',
+        select:'username'
+    });
+    this.populate({
+        path:'problemId',
+        select:'name'
+    });
+    next();
+});
+
 const Solution=mongoose.model('Solution',solutionSchema);
 
 export default Solution;
