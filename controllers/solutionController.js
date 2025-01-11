@@ -75,27 +75,11 @@ const questionResponse=catchAsync(async(req,res,next)=>{
 });
 
 const getAllSolutions=catchAsync(async(req,res,next)=>{
-    let solutions=new APIFeatures(
-        Solution.find(),req.query
-    ).filter().sort().limitFields();
-    
-    const now = new Date();
-    const contestStartTime = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()-5,
-        10,0,0,0
-    );
-    const penalty= await Solution.calcPenalty(
-        contestStartTime
-    );
-    
-    solutions=await solutions.query;
+    const solutions=await Solution.find();
     
     res.status(200).json({
         status:'success',
         result:solutions.length,
-        penalty,
         data:{
             solutions,
         }

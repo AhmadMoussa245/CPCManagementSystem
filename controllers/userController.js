@@ -3,8 +3,35 @@ import Question from "../models/questionModel.js";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import AppError from "../utils/appError.js";
+import APIFeatures from "../utils/apiFeatures.js";
+import Solution from "../models/solutionModel.js";
 
-
+const scoreBoard=catchAsync(async(req,res,next)=>{
+    let scores=new APIFeatures(
+        Solution.find(),req.query
+    ).filter().sort().limitFields();
+    
+    const now = new Date();
+    const contestStartTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()-5,
+        10,0,0,0
+    );
+    const penalty= await Solution.calcPenalty(
+        contestStartTime
+    );
+    scores=await scores.query;
+    
+    res.status(200).json({
+        status:'success',
+        result:scores.length,
+        penalty,
+        data:{
+            scores,
+        }
+    });
+});
 
 const sendQuestion=catchAsync(async(req,res,next)=>{
     const question=await Question.create({
@@ -74,6 +101,7 @@ const deleteUser=catchAsync(async(req,res,next)=>{
 });
 
 export default{
+    scoreBoard,
     sendQuestion,
     getAllUsers,
     updateUser,

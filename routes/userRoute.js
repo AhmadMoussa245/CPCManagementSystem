@@ -32,4 +32,6 @@ router.route('/users/:id')
     userController.deleteUser,
 );
 
+router.get('/scoreBoard',userController.scoreBoard);
+
 export default router;
