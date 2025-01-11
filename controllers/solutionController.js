@@ -6,12 +6,12 @@ import {fileURLToPath} from "url";
 import fs from "node:fs";
 import path from "path";
 import APIFeatures from "../utils/apiFeatures.js";
-import compile from "../utils/compile.js";
+import compile from "../utils/compiler.js";
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 
-const sendFileSolution=catchAsync(async(req,res,next)=>{
+const sendSolution=catchAsync(async(req,res,next)=>{
     req.body.code=req.file.path;
 
     const solution=await Solution.create({
@@ -44,66 +44,6 @@ const sendFileSolution=catchAsync(async(req,res,next)=>{
     const result =await compile(
         req.file.path,
         solutionOutputFile,
-        testCaseFile,
-        testCasesOutputFile,
-        timeLimit,
-        memoryLimit
-    );
-    solution.status=result.verdict;
-    await solution.save();
-
-    res.status(201).json({
-        status:'success',
-        data:{
-            solution,
-            verdict: result.status,
-            details: result.details,
-        }
-    });
-});
-
-const sendTextSolution=catchAsync(async(req,res,next)=>{
-    const fileName=req.user.username+'-'+Date.now();
-    const filePath=path.join(__dirname,
-        '../uploads/solutions',
-        fileName
-    );
-
-    fs.writeFile(
-        filePath,
-        req.body.code,
-        (err)=>{
-            return next(new AppError(
-                'failed to upload solution',500
-            ))
-        }
-    );
-    req.body.code=filePath;   
-
-    const solution=await Solution.create({
-        code:req.body.code,
-        createdAt:Date.now(),
-        userId:req.user.id,
-        problemId:req.params.id
-    });
-
-    const problem = await Problem
-    .findById(req.params.id).select('+testCases');
-    if (!problem) {
-        Solution.findByIdAndDelete(solution.id);
-        return next(new AppError(
-            'Problem not found', 404
-        ));
-    }
-    const testCaseFile = problem.testCases;
-    const testCasesOutputFile = path.join(
-        __dirname,
-        '../uploads/testCasesOutput',
-        `${problem.name}-testCasesOutput`
-    );
-    const {timeLimit,memoryLimit}=problem;
-    const result =await compile(
-        filePath,
         testCaseFile,
         testCasesOutputFile,
         timeLimit,
@@ -197,8 +137,7 @@ const deleteAllSolutions=catchAsync(async(req,res,next)=>{
 });
 
 export default{
-    sendFileSolution,
-    sendTextSolution,
+    sendSolution,
     getAllSolutions,
     getSolution,
     updateSolution,

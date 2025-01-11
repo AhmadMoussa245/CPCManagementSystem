@@ -29,11 +29,7 @@ router.route('/solutions/:id')
 
 router.post('/problems/:id/solution/file',
     upload.single('code'),
-    solutionController.sendFileSolution
-);
-
-router.post('/problems/:id/solution/text',
-    solutionController.sendTextSolution
+    solutionController.sendSolution
 );
 
 export default router;
