@@ -61,19 +61,29 @@ solutionSchema.statics.calcPenalty = async function (contestStartTime) {
                 userId: 1,
                 penaltyTime: {
                     $cond: {
-                        if: { $eq: ["$status", "Accepted"] },  // If status is "Accepted"
+                        if: { $eq: ["$status", "Accepted"] }, // If status is "Accepted"
                         then: {
                             $divide: [
                                 { $subtract: ["$createdAt", contestStartTime] },
-                                1000 * 60,  // Convert milliseconds to minutes
+                                1000 * 60, // Convert milliseconds to minutes
                             ],
                         },
-                        else: 20,  // If not accepted, add 20 minutes penalty
+                        else: {
+                            $add: [ // Add actual time spent + 20 minutes penalty
+                                {
+                                    $divide: [
+                                        { $subtract: ["$createdAt", contestStartTime] },
+                                        1000 * 60, // Convert milliseconds to minutes
+                                    ],
+                                },
+                                20, // Add 20 minutes penalty
+                            ],
+                        },
                     },
                 },
-                status: 1,  // Include status for later grouping
+                status: 1, // Include status for later grouping
             },
-        },
+        },        
         {
             $group: {
                 _id: { userId: "$userId" },  // Group by userId
