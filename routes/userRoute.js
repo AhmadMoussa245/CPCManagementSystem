@@ -17,19 +17,19 @@ router.post('/problems/:id/question',
     userController.sendQuestion
 );
 
-router.use(authController.restrictTo('admin'));
-
 router.get('/users',
+    authController.restrictTo('admin'),
     userController.getAllUsers,
-    authController.restrictTo('admin')
 );
 
 router.route('/users/:id')
-.patch(userController.updateUser,
-    authController.restrictTo('admin')
+.patch(
+    authController.restrictTo('admin'),
+    userController.updateUser,
 )
-.delete(userController.deleteUser,
-    authController.restrictTo('admin')
+.delete(
+    authController.restrictTo('admin'),
+    userController.deleteUser,
 );
 
 export default router;

@@ -8,19 +8,23 @@ const router = express.Router();
 router.use(authController.protect);
 
 router.route('/solutions')
-.get(solutionController.getAllSolutions,
-    authController.restrictTo('admin')
+.get(
+    authController.restrictTo('admin'),
+    solutionController.getAllSolutions
 )
-.delete(solutionController.deleteAllSolutions,
-    authController.restrictTo('admin')
+.delete(
+    authController.restrictTo('admin'),
+    solutionController.deleteAllSolutions
 )
 
 router.route('/solutions/:id')
-.get(solutionController.getSolution,
-    authController.restrictTo('admin')
+.get(
+    authController.restrictTo('admin'),
+    solutionController.getSolution,
 )
-.patch(solutionController.updateSolution,
-    authController.restrictTo('admin')
+.patch(
+    authController.restrictTo('admin'),
+    solutionController.updateSolution,
 );
 
 router.post('/problems/:id/solution/file',

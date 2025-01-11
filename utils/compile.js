@@ -2,9 +2,6 @@ import fs from 'fs';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import catchAsync from './catchAsync.js';
-import Problem from '../models/problemModel.js';
-import AppError from './appError.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,17 +11,22 @@ const normalizeOutput = (output) => output.replace(/\r\n/g, '\n').trim();
 
 const executeSolution = async (
     solutionPath,
+    solutionOutPutPath,
     testCasePath,
-    expectedOutputPath,
+    testCasesOutputPath,
     timeLimit,
     memoryLimit
 ) => {
     return new Promise((resolve, reject) => {
-        const outputFilePath = path.join(__dirname, '../uploads/solutionsOutput', 'output');
         
         // Step 1: Compile the solution
         console.log('Compiling Solution...');
-        const compileProcess = spawn('g++', [solutionPath, '-o', `${outputFilePath}.out`, '-std=c++14']);
+        const compileProcess = spawn('g++', [
+            solutionPath, '-o',
+             `${solutionOutPutPath}.out`,
+              '-std=c++14'
+            ]
+        );
 
         compileProcess.stderr.on('data', (data) => {
             console.log(
@@ -43,19 +45,19 @@ const executeSolution = async (
                     { verdict: 'Compilation Error' }
                 );
             }
-            console.log('Compilation Successful. Executing the Solution...');
+            // console.log('Compilation Successful. Executing the Solution...');
 
-            if (!fs.existsSync(`${outputFilePath}.out`)) {
+            if (!fs.existsSync(`${solutionOutPutPath}.out`)) {
                 console.log('Compiled output file not found');
                 return resolve({ verdict: 'Compilation Error' });
             }
 
             // Step 2: Execute the solution with input
-            const runProcess = spawn(`${outputFilePath}.out`, [], {
+            const runProcess = spawn(`${solutionOutPutPath}.out`, [], {
                 stdio: ['pipe', 'pipe', 'pipe'], // stdin, stdout, stderr
             });
 
-            console.log('Writing input to the process...');
+            // console.log('Writing input to the process...');
             runProcess.stdin.write(fs.readFileSync(testCasePath, 'utf8'));
             runProcess.stdin.end();
 
@@ -88,11 +90,11 @@ const executeSolution = async (
                 }
 
                     // Step 5: Compare the output with the expected output
-                const expectedOutput = normalizeOutput(fs.readFileSync(expectedOutputPath, 'utf8'));
+                const expectedOutput = normalizeOutput(fs.readFileSync(testCasesOutputPath, 'utf8'));
                 const userOutput = normalizeOutput(stdout);
 
-                console.log('User Output:', userOutput);
-                console.log('Expected Output:', expectedOutput);
+                // console.log('User Output:', userOutput);
+                // console.log('Expected Output:', expectedOutput);
 
                 // Step 6: Final comparison and verdict
                 if (userOutput === expectedOutput) {

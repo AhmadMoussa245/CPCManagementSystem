@@ -17,7 +17,7 @@ const problemSchema=mongoose.Schema(
         },
         memoryLimit:{
             type:Number,
-            default:256*1024*1024
+            default:64*1024*1024
         },
         testCases:{
             type:String,

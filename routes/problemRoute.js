@@ -24,10 +24,12 @@ router.route('/problems')
 );
 
 router.route('/problems/:id')
-.patch(problemController.updateProblem,
-    authController.restrictTo('admin')
+.patch(
+    authController.restrictTo('admin'),
+    problemController.updateProblem,
 )
-.delete(problemController.deleteProblem,
+.delete(
+    problemController.deleteProblem,
     authController.restrictTo('admin')
 );
 

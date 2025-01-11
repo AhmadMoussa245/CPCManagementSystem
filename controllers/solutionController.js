@@ -24,21 +24,28 @@ const sendFileSolution=catchAsync(async(req,res,next)=>{
     const problem = await Problem
     .findById(req.params.id).select('+testCases');
     if (!problem) {
+        Solution.findByIdAndDelete(solution.id);
         return next(new AppError(
             'Problem not found', 404
         ));
     }
-    const testCaseFile = problem.testCases;
-    const expectedOutputFile = path.join(
+    const solutionOutputFile = path.join(
         __dirname,
-        '../uploads/expectedOutput',
-        `${problem.name}-expectedOutput`
+        '../uploads/solutionsOutput',
+        req.user.username+'-'+Date.now().toString(),
+    );
+    const testCaseFile = problem.testCases;
+    const testCasesOutputFile = path.join(
+        __dirname,
+        '../uploads/testCasesOutput',
+        `${problem.name}-testCasesOutput`
     );
     const {timeLimit,memoryLimit}=problem;
     const result =await compile(
         req.file.path,
+        solutionOutputFile,
         testCaseFile,
-        expectedOutputFile,
+        testCasesOutputFile,
         timeLimit,
         memoryLimit
     );
@@ -79,11 +86,38 @@ const sendTextSolution=catchAsync(async(req,res,next)=>{
         userId:req.user.id,
         problemId:req.params.id
     });
-    
+
+    const problem = await Problem
+    .findById(req.params.id).select('+testCases');
+    if (!problem) {
+        Solution.findByIdAndDelete(solution.id);
+        return next(new AppError(
+            'Problem not found', 404
+        ));
+    }
+    const testCaseFile = problem.testCases;
+    const testCasesOutputFile = path.join(
+        __dirname,
+        '../uploads/testCasesOutput',
+        `${problem.name}-testCasesOutput`
+    );
+    const {timeLimit,memoryLimit}=problem;
+    const result =await compile(
+        filePath,
+        testCaseFile,
+        testCasesOutputFile,
+        timeLimit,
+        memoryLimit
+    );
+    solution.status=result.verdict;
+    await solution.save();
+
     res.status(201).json({
         status:'success',
         data:{
-            solution
+            solution,
+            verdict: result.status,
+            details: result.details,
         }
     });
 });

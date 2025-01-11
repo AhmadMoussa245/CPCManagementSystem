@@ -14,6 +14,8 @@ const solutionSchema=mongoose.Schema(
                     'In Queue',
                     'Accepted',
                     'Wrong Answer',
+                    'Runtime Error',
+                    'Compilation Error',
                     'Time Limit Exceeded',
                     'Memory Limit Exceeded'
                 ],
