@@ -14,14 +14,21 @@ router.get('/problems/:id',
     problemController.getProblem
 );
 
-router.use(authController.restrictTo('admin'));
 
 router.route('/problems')
-.post(problemController.createProblem)
-.delete(problemController.deleteAllProblems);
+.post(problemController.createProblem,
+    authController.restrictTo('admin')
+)
+.delete(problemController.deleteAllProblems,
+    authController.restrictTo('admin')
+);
 
 router.route('/problems/:id')
-.patch(problemController.updateProblem)
-.delete(problemController.deleteProblem);
+.patch(problemController.updateProblem,
+    authController.restrictTo('admin')
+)
+.delete(problemController.deleteProblem,
+    authController.restrictTo('admin')
+);
 
 export default router;

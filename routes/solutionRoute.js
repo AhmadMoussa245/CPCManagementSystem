@@ -6,15 +6,22 @@ import upload from '../utils/multer.js';
 const router = express.Router();
 
 router.use(authController.protect);
-router.use(authController.restrictTo('admin'));
 
 router.route('/solutions')
-.get(solutionController.getAllSolutions)
-.delete(solutionController.deleteAllSolutions)
+.get(solutionController.getAllSolutions,
+    authController.restrictTo('admin')
+)
+.delete(solutionController.deleteAllSolutions,
+    authController.restrictTo('admin')
+)
 
 router.route('/solutions/:id')
-.get(solutionController.getSolution)
-.patch(solutionController.updateSolution);
+.get(solutionController.getSolution,
+    authController.restrictTo('admin')
+)
+.patch(solutionController.updateSolution,
+    authController.restrictTo('admin')
+);
 
 router.post('/problems/:id/solution/file',
     upload.single('code'),
