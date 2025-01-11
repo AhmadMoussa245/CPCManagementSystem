@@ -1,0 +1,15 @@
+#include <iostream>
+using namespace std;
+
+int dailyroutine(){
+    int x=3;
+    int y=3;
+    return x;
+}
+int main(){
+
+    dailyroutine();
+
+
+    return 0;
+}
