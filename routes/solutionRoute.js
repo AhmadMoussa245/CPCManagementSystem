@@ -16,9 +16,13 @@ router.route('/solutions/:id')
 .get(solutionController.getSolution)
 .patch(solutionController.updateSolution);
 
-router.post('/problems/:id/solution',
+router.post('/problems/:id/solution/file',
     upload.single('code'),
-    solutionController.sendSolution
+    solutionController.sendFileSolution
+);
+
+router.post('/problems/:id/solution/text',
+    solutionController.sendTextSolution
 );
 
 export default router;

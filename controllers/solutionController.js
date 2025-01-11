@@ -4,30 +4,46 @@ import AppError from "../utils/appError.js";
 import {fileURLToPath} from "url";
 import fs from "node:fs";
 import path from "path";
+import APIFeatures from "../utils/apiFeatures.js";
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 
-const sendSolution=catchAsync(async(req,res,next)=>{
+const sendFileSolution=catchAsync(async(req,res,next)=>{
+    req.body.code=req.file.path;
+
+    const solution=await Solution.create({
+        code:req.body.code,
+        createdAt:Date.now(),
+        userId:req.user.id,
+        problemId:req.params.id
+    });
     
-    if(req.file){
-        req.body.code=req.file.filename;
-    }else{
-        const fileName=req.user.username+'-'+Date.now();
-        fs.writeFile(
-            path.join(__dirname,
-                '../uploads/solutions',
-                fileName
-            ),
-            req.body.code,
-            (err)=>{
-                return next(new AppError(
-                    'failed to upload solution',500
-                ))
-            }
-        );
-        req.body.code=fileName;
-    };
+    res.status(201).json({
+        status:'success',
+        data:{
+            solution
+        }
+    });
+});
+
+const sendTextSolution=catchAsync(async(req,res,next)=>{
+    const fileName=req.user.username+'-'+Date.now();
+    const filePath=path.join(__dirname,
+        '../uploads/solutions',
+        fileName
+    );
+
+    fs.writeFile(
+        filePath,
+        req.body.code,
+        (err)=>{
+            return next(new AppError(
+                'failed to upload solution',500
+            ))
+        }
+    );
+    req.body.code=filePath;   
 
     const solution=await Solution.create({
         code:req.body.code,
@@ -45,13 +61,29 @@ const sendSolution=catchAsync(async(req,res,next)=>{
 });
 
 const getAllSolutions=catchAsync(async(req,res,next)=>{
-    const solutions=await Solution.find();
+    let solutions=new APIFeatures(
+        Solution.find(),req.query
+    ).filter().sort().limitFields();
+    
+    const now = new Date();
+    const contestStartTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()-5,
+        10,0,0,0
+    );
+    const penalty= await Solution.calcPenalty(
+        contestStartTime
+    );
+    
+    solutions=await solutions.query;
     
     res.status(200).json({
         status:'success',
         result:solutions.length,
+        penalty,
         data:{
-            solutions
+            solutions,
         }
     });
 });
@@ -103,7 +135,8 @@ const deleteAllSolutions=catchAsync(async(req,res,next)=>{
 });
 
 export default{
-    sendSolution,
+    sendFileSolution,
+    sendTextSolution,
     getAllSolutions,
     getSolution,
     updateSolution,
