@@ -1,5 +1,6 @@
 import express from 'express';
 import authController from '../controllers/authController.js';
+import userController from '../controllers/userController.js';
 import solutionController from '../controllers/solutionController.js';
 import upload from '../utils/multer.js';
 
@@ -30,6 +31,11 @@ router.route('/solutions/:id')
 router.post('/problems/:id/solution/file',
     upload.single('code'),
     solutionController.sendSolution
+);
+
+router.post('/res-question/:id',
+    authController.restrictTo('admin'),
+    solutionController.questionResponse
 );
 
 export default router;

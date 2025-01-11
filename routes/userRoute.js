@@ -13,7 +13,7 @@ router.post('/login',
 
 router.use(authController.protect);
 
-router.post('/problems/:id/question',
+router.post('/problems/:id/sendQuestion',
     userController.sendQuestion
 );
 

@@ -3,10 +3,10 @@ import Problem from "../models/problemModel.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import {fileURLToPath} from "url";
-import fs from "node:fs";
 import path from "path";
 import APIFeatures from "../utils/apiFeatures.js";
 import compile from "../utils/compiler.js";
+import Question from "../models/questionModel.js";
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -58,6 +58,18 @@ const sendSolution=catchAsync(async(req,res,next)=>{
             solution,
             verdict: result.status,
             details: result.details,
+        }
+    });
+});
+
+const questionResponse=catchAsync(async(req,res,next)=>{
+    const question=await Question.findById(req.params.id);
+
+    res.status(201).json({
+        status:'success',
+        data:{
+            question:question,
+            answer:req.body.answer
         }
     });
 });
@@ -138,6 +150,7 @@ const deleteAllSolutions=catchAsync(async(req,res,next)=>{
 
 export default{
     sendSolution,
+    questionResponse,
     getAllSolutions,
     getSolution,
     updateSolution,
