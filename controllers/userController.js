@@ -13,16 +13,13 @@ const scoreBoard=catchAsync(async(req,res,next)=>{
         now.getDate()-5,
         10,0,0,0
     );
-    const penalty= await Solution.calcPenalty(
+    const stats=await Solution.calcUserStats(
         contestStartTime
     );
-    const accepted=await Solution.calcAcceptedProblems();
-    
     res.status(200).json({
         status:'success',
         data:{
-            penalty,
-            accepted,
+            stats
         }
     });
 });

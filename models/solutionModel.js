@@ -48,53 +48,17 @@ solutionSchema.pre(/^find/,function(next){
     next();
 });
 
-solutionSchema.statics.calcAcceptedProblems = async function () {
+solutionSchema.statics.calcUserStats = async function (contestStartTime) {
     const results = await this.aggregate([
         {
             $match: {
-                status: "Accepted" // Filter only accepted solutions
-            }
-        },
-        {
-            $group: {
-                _id: {
-                    userId: "$userId", // Group by user
-                    problemId: "$problemId" // Group by problem
-                }
-            }
-        },
-        {
-            $group: {
-                _id: "$_id.userId", // Group by userId again
-                acceptedProblemsCount: { $sum: 1 } // Count distinct problems
-            }
-        },
-        {
-            $project: {
-                _id: 0, // Exclude the default _id
-                userId: "$_id", // Include userId
-                acceptedProblemsCount: 1 // Include the count of accepted problems
-            }
-        }
-    ]);
-
-    // You can log or manipulate the results here if needed
-    console.log(results);
-
-    return results; // Return the calculated results
-};
-
-solutionSchema.statics.calcPenalty = async function (contestStartTime) {
-    // Aggregation to calculate penalties for accepted and non-accepted solutions (excluding "In Queue")
-    const penalties = await this.aggregate([
-        {
-            $match: {
-                status: { $nin: ["In Queue"] },  // Exclude "In Queue" status
+                status: { $nin: ["In Queue"] }, // Exclude "In Queue" status
             },
         },
         {
             $project: {
                 userId: 1,
+                problemId: 1,
                 penaltyTime: {
                     $cond: {
                         if: { $eq: ["$status", "Accepted"] }, // If status is "Accepted"
@@ -117,23 +81,51 @@ solutionSchema.statics.calcPenalty = async function (contestStartTime) {
                         },
                     },
                 },
-                status: 1, // Include status for later grouping
-            },
-        },        
-        {
-            $group: {
-                _id: { userId: "$userId" },  // Group by userId
-                totalPenalty: { $sum: "$penaltyTime" },  // Sum penalties for each user
+                isAccepted: { $cond: { if: { $eq: ["$status", "Accepted"] }, then: true, else: false } },
             },
         },
         {
-            // Sort the results by total penalty in ascending order
-            $sort: { totalPenalty: 1 },
-        }
+            $group: {
+                _id: { userId: "$userId", problemId: "$problemId" }, // Group by userId and problemId
+                totalPenalty: { $sum: "$penaltyTime" }, // Sum penalties for each user-problem pair
+                isAccepted: { $max: "$isAccepted" }, // Check if this problem was accepted by the user
+            },
+        },
+        {
+            $group: {
+                _id: "$_id.userId", // Group by userId
+                totalPenalty: { $sum: "$totalPenalty" }, // Sum penalties for all problems by the user
+                acceptedProblemsCount: { $sum: { $cond: { if: "$isAccepted", then: 1, else: 0 } } }, // Count distinct accepted problems
+            },
+        },
+        {
+            $lookup: {
+                from: "users", // Name of the users collection
+                localField: "_id", // The field in the current collection (userId)
+                foreignField: "_id", // The field in the users collection
+                as: "userDetails", // Output array field
+            },
+        },
+        {
+            $unwind: "$userDetails", // Flatten the userDetails array
+        },
+        {
+            $project: {
+                _id: 0, // Exclude the default _id
+                userId: "$_id", // Include userId
+                username: "$userDetails.username", // Include username
+                totalPenalty: 1, // Include total penalty
+                acceptedProblemsCount: 1, // Include the count of accepted problems
+            },
+        },
+        {
+            $sort: { totalPenalty: 1 }, // Sort by total penalty in ascending order
+        },
     ]);
 
-    return penalties;
+    return results;
 };
+
 
 
 const Solution=mongoose.model('Solution',solutionSchema);
