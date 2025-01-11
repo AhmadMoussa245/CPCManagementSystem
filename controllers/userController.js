@@ -3,14 +3,9 @@ import Question from "../models/questionModel.js";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import AppError from "../utils/appError.js";
-import APIFeatures from "../utils/apiFeatures.js";
 import Solution from "../models/solutionModel.js";
 
 const scoreBoard=catchAsync(async(req,res,next)=>{
-    let scores=new APIFeatures(
-        Solution.find(),req.query
-    ).filter().sort().limitFields();
-    
     const now = new Date();
     const contestStartTime = new Date(
         now.getFullYear(),
@@ -21,14 +16,13 @@ const scoreBoard=catchAsync(async(req,res,next)=>{
     const penalty= await Solution.calcPenalty(
         contestStartTime
     );
-    scores=await scores.query;
+    const accepted=await Solution.calcAcceptedProblems();
     
     res.status(200).json({
         status:'success',
-        result:scores.length,
-        penalty,
         data:{
-            scores,
+            penalty,
+            accepted,
         }
     });
 });

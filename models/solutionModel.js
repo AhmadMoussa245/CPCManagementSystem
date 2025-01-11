@@ -48,6 +48,42 @@ solutionSchema.pre(/^find/,function(next){
     next();
 });
 
+solutionSchema.statics.calcAcceptedProblems = async function () {
+    const results = await this.aggregate([
+        {
+            $match: {
+                status: "Accepted" // Filter only accepted solutions
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    userId: "$userId", // Group by user
+                    problemId: "$problemId" // Group by problem
+                }
+            }
+        },
+        {
+            $group: {
+                _id: "$_id.userId", // Group by userId again
+                acceptedProblemsCount: { $sum: 1 } // Count distinct problems
+            }
+        },
+        {
+            $project: {
+                _id: 0, // Exclude the default _id
+                userId: "$_id", // Include userId
+                acceptedProblemsCount: 1 // Include the count of accepted problems
+            }
+        }
+    ]);
+
+    // You can log or manipulate the results here if needed
+    console.log(results);
+
+    return results; // Return the calculated results
+};
+
 solutionSchema.statics.calcPenalty = async function (contestStartTime) {
     // Aggregation to calculate penalties for accepted and non-accepted solutions (excluding "In Queue")
     const penalties = await this.aggregate([
