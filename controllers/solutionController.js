@@ -1,10 +1,12 @@
 import Solution from "../models/solutionModel.js";
+import Problem from "../models/problemModel.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import {fileURLToPath} from "url";
 import fs from "node:fs";
 import path from "path";
 import APIFeatures from "../utils/apiFeatures.js";
+import compile from "../utils/compile.js";
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -18,11 +20,37 @@ const sendFileSolution=catchAsync(async(req,res,next)=>{
         userId:req.user.id,
         problemId:req.params.id
     });
-    
+
+    const problem = await Problem
+    .findById(req.params.id).select('+testCases');
+    if (!problem) {
+        return next(new AppError(
+            'Problem not found', 404
+        ));
+    }
+    const testCaseFile = problem.testCases;
+    const expectedOutputFile = path.join(
+        __dirname,
+        '../uploads/expectedOutput',
+        `${problem.name}-expectedOutput`
+    );
+    const {timeLimit,memoryLimit}=problem;
+    const result =await compile(
+        req.file.path,
+        testCaseFile,
+        expectedOutputFile,
+        timeLimit,
+        memoryLimit
+    );
+    solution.status=result.verdict;
+    await solution.save();
+
     res.status(201).json({
         status:'success',
         data:{
-            solution
+            solution,
+            verdict: result.status,
+            details: result.details,
         }
     });
 });

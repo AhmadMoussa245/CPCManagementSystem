@@ -13,11 +13,11 @@ const problemSchema=mongoose.Schema(
         },
         timeLimit:{
             type:Number,
-            required:[true,'problem must have a time limit']
+            default:1000
         },
         memoryLimit:{
             type:Number,
-            required:[true,'problem must have a memory limit']
+            default:256*1024*1024
         },
         testCases:{
             type:String,

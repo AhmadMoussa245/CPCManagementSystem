@@ -10,7 +10,7 @@ const storage=multer.diskStorage({
         cb(null,path.join(__dirname,'../uploads/solutions'))
     },
     filename:(req,file,cb)=>{
-        cb(null,req.user.username+'-'+Date.now());
+        cb(null,req.user.username+'-'+Date.now()+'.cpp');
     }
 })
 

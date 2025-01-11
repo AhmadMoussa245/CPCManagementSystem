@@ -36,22 +36,23 @@ const getProblem=catchAsync(async(req,res,next)=>{
 });
 
 const createProblem=catchAsync(async(req,res,next)=>{
-    const problem=await Problem.create(req.body);
-    
-    const fileName=problem.name+'-testCases';
+    const fileName=req.body.name+'-testCases';
+    const filePath=path.join(__dirname,
+        '../uploads/testCases',
+        fileName
+    );
     fs.writeFile(
-        path.join(__dirname,
-            '../uploads/testCases',
-            fileName
-        ),
-        problem.testCases,
+        filePath,
+        req.body.testCases,
         (err)=>{
             return next(new AppError(
                 'failed to upload testCases',500
             ))
         }
     )
+    req.body.testCases=filePath;
     
+    const problem=await Problem.create(req.body);
     res.status(201).json({
         status:'success',
         data:{
