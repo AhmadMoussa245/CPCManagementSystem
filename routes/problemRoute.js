@@ -16,11 +16,13 @@ router.get('/problems/:id',
 
 
 router.route('/problems')
-.post(problemController.createProblem,
-    authController.restrictTo('admin')
+.post(
+    authController.restrictTo('admin'),
+    problemController.createProblem
 )
-.delete(problemController.deleteAllProblems,
-    authController.restrictTo('admin')
+.delete(
+    authController.restrictTo('admin'),
+    problemController.deleteAllProblems,
 );
 
 router.route('/problems/:id')
@@ -29,8 +31,8 @@ router.route('/problems/:id')
     problemController.updateProblem,
 )
 .delete(
-    problemController.deleteProblem,
-    authController.restrictTo('admin')
+    authController.restrictTo('admin'),
+    problemController.deleteProblem
 );
 
 export default router;

@@ -45,9 +45,9 @@ const createProblem=catchAsync(async(req,res,next)=>{
         filePath,
         req.body.testCases,
         (err)=>{
-            return next(new AppError(
-                'failed to upload testCases',500
-            ))
+            if(err){
+                console.log(err);
+            }
         }
     )
     req.body.testCases=filePath;

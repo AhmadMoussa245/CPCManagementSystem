@@ -28,7 +28,7 @@ router.route('/solutions/:id')
     solutionController.updateSolution,
 );
 
-router.post('/problems/:id/solution/file',
+router.post('/problems/:id/solution',
     upload.single('code'),
     solutionController.sendSolution
 );

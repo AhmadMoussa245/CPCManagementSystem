@@ -40,6 +40,8 @@ const sendSolution=catchAsync(async(req,res,next)=>{
         '../uploads/testCasesOutput',
         `${problem.name}-testCasesOutput`
     );
+    console.log(testCaseFile);
+    console.log(testCasesOutputFile);
     const {timeLimit,memoryLimit}=problem;
     const result =await compile(
         req.file.path,
